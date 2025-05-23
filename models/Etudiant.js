@@ -49,6 +49,14 @@ const etudiantSchema = new mongoose.Schema(
             type: String, 
             required: false 
         },
+        classe: { 
+            type: String, 
+            required: false 
+        },
+        groupe: { 
+            type: String, 
+            required: false 
+        },
     }, 
     { 
         timestamps: true

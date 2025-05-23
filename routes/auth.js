@@ -5,6 +5,8 @@ const axios   = require("axios")
 const Etudiant = require('../models/Etudiant');
 const Intervenant = require('../models/Intervenant');
 const Tuteur = require('../models/Tuteur');
+const Module = require('../models/Module');
+const Seance = require('../models/Seance');
 const qs      = require('qs');
 const jwksClient = require('jwks-rsa');
 
@@ -275,6 +277,66 @@ router.post('/createTuteur', async (req, res) => {
 });
 
 
+
+
+router.post('/createModule', async (req, res) => {
+  try {
+    const { nom, code, semestre, description, credits, intervenants } = req.body;
+
+    if (!nom) 
+      return res.status(400).json({ msg: 'Missing required fields' });
+
+    const module = await Module.create({
+      nom, 
+      code, 
+      semestre, 
+      description, 
+      credits, 
+      intervenants
+    });
+
+    res.status(201).json({
+      id: module._id,
+    });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ msg: e.message });
+  }
+});
+
+
+
+
+
+router.post('/createSeance', async (req, res) => {
+  try {
+    const { moduleId, salle, endDateTime, startDateTime, type, groupe, classe } = req.body;
+
+    if (!moduleId || !classe || !salle || !startDateTime || !endDateTime || !type || !groupe) 
+      return res.status(400).json({ msg: 'Missing required fields' });
+
+    const seance = await Seance.create({
+      moduleId, 
+      salle, 
+      startDateTime, 
+      endDateTime, 
+      type, 
+      groupe, 
+      classe
+    });
+
+    res.status(201).json({
+      id: seance._id,
+    });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ msg: e.message });
+  }
+});
+ 
+ 
  
 
 module.exports = router;
