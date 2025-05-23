@@ -47,6 +47,8 @@ const wss = new WebSocket.Server({
 });
 
 
+const activeUsers = new Map();
+
 
 wss.on('connection', (ws, req) => {
   ws.isAlive = true;
@@ -58,24 +60,45 @@ wss.on('connection', (ws, req) => {
     try {
       const message = JSON.parse(data);
 
-      if (message.action === 'get_planning_student') {
+      if (message.action === 'register') {
+        const { userId, classe, groupe } = message.payload;
+
+        ws.userId = userId;
+    
+        if (!activeUsers.has(userId)) {
+          activeUsers.set(userId, {
+            sockets: new Set(),
+            info: { classe, groupe },
+          });
+        }
+
+        activeUsers.get(userId).sockets.add(ws);
+
+        console.log(`Utilisateur connecté : ${userId} appartenant à la classe : ${classe} et au groupe : ${groupe}`);
+        
+        
+        console.log("-------------------------");
+        console.log(`Total sockets: ${activeUsers.size}`)
+        console.log("-------------------------");
+      }
+      else if (message.action === 'get_planning_student') {
         console.warn("WS get_planning_student executed...")
 
         const { userId, groupe, classe  } = message.payload;
 
-        // const filter = {
-        //   $and: [
-        //     { groupe: groupe },
-        //     { classe:  classe }
-        //   ]
-        // };
+        const filter = {
+          $and: [
+            { groupe: groupe },
+            { classe:  classe }
+          ]
+        };
 
-        // const seances = await Seance.find(filter)
-        //   .populate('moduleId')
-        //   .sort({ jour: 1, startTime: 1 })
-        //   .lean();
+        const seances = await Seance.find(filter)
+          .populate('moduleId')
+          .sort({ jour: 1, startTime: 1 })
+          .lean();
 
-        const seances = await Seance.find({}).lean();
+         
         
         console.warn(seances);
         
@@ -102,30 +125,73 @@ wss.on('connection', (ws, req) => {
     }
   });
 
-  ws.on('close', () => console.log('WS client disconnected'));
+    ws.on('close', () => {
+    const userId = ws.userId;
+    if (!userId) return;
+
+    const entry = activeUsers.get(userId);
+    if (entry) {
+      entry.sockets.delete(ws);
+      if (entry.sockets.size === 0) {
+        activeUsers.delete(userId);
+        console.log(`Utilisateur ${userId} déconnecté.`);
+        console.log("-------------------------");
+        console.log(`Total sockets: ${activeUsers.size}`)
+        console.log("-------------------------");
+      }
+    }
+    console.log("WS client disconnected");
+  });
+
   ws.on('error', (err) => console.error('WS Error:', err));
 });
 
 
 
-
-
-Seance.watch().on('change', async (change) => {
+Seance.watch([], { fullDocument: 'updateLookup' }).on('change', async (change) => {
   console.warn("Seance collection changed :");
-  console.warn(change);
-  const planningData = await Seance.find({}).lean();
+  console.log(change);
 
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({
-        action: 'seances_updated',
-        payload: planningData, 
-      }));
+  console.warn("Active Users Map:", activeUsers);
+
+
+  const updatedSeance = change.fullDocument;
+  if (!updatedSeance) return;  
+
+  const targetClasse = updatedSeance.classe;
+  const targetGroupe = updatedSeance.groupe;
+
+  
+
+  for (const [userId, { sockets, info }] of activeUsers.entries()) {
+    if (
+      info.classe === targetClasse &&
+      Array.isArray(targetGroupe) &&
+      targetGroupe.includes(info.groupe)
+    ){
+
+      console.log(`Sending updated seance to ${userId} - ${info.classe} / ${info.groupe}`);
+      
+      for (const socket of sockets) {
+        if (socket.readyState === WebSocket.OPEN) {
+          const allSeances = await Seance.find({ 
+            classe: targetClasse, 
+            groupe: { $in: [info.groupe] } 
+          });
+
+          socket.send(JSON.stringify({
+            action: 'seances_updated',
+            payload: allSeances,
+          }));
+        }
+      }
     }
-  });
+    else{
+      console.error("NOT BROADCASTED...");
+    }
+  }
 });
 
- 
 
 
 
