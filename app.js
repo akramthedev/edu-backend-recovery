@@ -58,14 +58,32 @@ wss.on('connection', (ws, req) => {
     try {
       const message = JSON.parse(data);
 
-      if (message.action === 'get_planning') {
-        console.warn("WS get_planning executed...")
-        const planningData = await Seance.find({}).lean();
+      if (message.action === 'get_planning_student') {
+        console.warn("WS get_planning_student executed...")
+
+        const { userId, groupe, classe  } = message.payload;
+
+        // const filter = {
+        //   $and: [
+        //     { groupe: groupe },
+        //     { classe:  classe }
+        //   ]
+        // };
+
+        // const seances = await Seance.find(filter)
+        //   .populate('moduleId')
+        //   .sort({ jour: 1, startTime: 1 })
+        //   .lean();
+
+        const seances = await Seance.find({}).lean();
+        
+        console.warn(seances);
         
         ws.send(JSON.stringify({
-          action: 'get_planning',
-          payload: planningData,
+          action: 'get_planning_student',
+          payload: seances,
         }));
+
       } else if(message.action === "hello_world") {
 
         console.warn("WS hello_world executed...")
@@ -93,8 +111,8 @@ wss.on('connection', (ws, req) => {
 
 
 Seance.watch().on('change', async (change) => {
-  console.log('Seances collection changed:', change);
-
+  console.warn("Seance collection changed :");
+  console.warn(change);
   const planningData = await Seance.find({}).lean();
 
   wss.clients.forEach((client) => {
@@ -107,13 +125,7 @@ Seance.watch().on('change', async (change) => {
   });
 });
 
-
-Seance.watch().on('change', (change)=>{
-  console.warn("--------------------");
-  console.warn("Seance collection changed :");
-  console.warn(change);
-  console.warn("--------------------");
-});
+ 
 
 
 

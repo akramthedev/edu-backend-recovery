@@ -8,8 +8,8 @@ const Seance   = require('../models/Seance');
 
 router.get('/etudiant/:id', async (req, res) => {
   try {
-    const etu = await Etudiant.findById(req.params.id).lean();
-    if (!etu) return res.status(404).json({ message: 'Student not found' });
+    // const etu = await Etudiant.findById(req.params.id).lean();
+    // if (!etu) return res.status(404).json({ message: 'Student not found' });
 
     const filter = {
       $and: [
