@@ -54,7 +54,6 @@ wss.on('connection', (ws, req) => {
   ws.isAlive = true;
   ws.on('pong', heartbeat);
 
-  console.log('WS client connected successfully');
 
   ws.on('message', async (data) => {
     try {
@@ -74,7 +73,7 @@ wss.on('connection', (ws, req) => {
 
         activeUsers.get(userId).sockets.add(ws);
 
-        console.log(`Utilisateur connecté : ${userId} appartenant à la classe : ${classe} et au groupe : ${groupe}`);
+        console.warn(`Utilisateur connecté : ${userId} appartenant à la classe : ${classe} et au groupe : ${groupe}`);
         
         
         console.log("-------------------------");
@@ -140,7 +139,6 @@ wss.on('connection', (ws, req) => {
         console.log("-------------------------");
       }
     }
-    console.log("WS client disconnected");
   });
 
   ws.on('error', (err) => console.error('WS Error:', err));
@@ -187,7 +185,7 @@ Seance.watch([], { fullDocument: 'updateLookup' }).on('change', async (change) =
       }
     }
     else{
-      console.error("NOT BROADCASTED...");
+      console.error(`Not Broadcasted to user : ${userId}`);
     }
   }
 });
