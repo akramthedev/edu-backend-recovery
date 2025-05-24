@@ -170,13 +170,13 @@ Seance.watch([], { fullDocument: 'updateLookup' }).on('change', async (change) =
 
       console.log(`Sending updated seance to ${userId} - ${info.classe} / ${info.groupe}`);
       
+      const allSeances = await Seance.find({ 
+        classe: targetClasse, 
+        groupe: { $in: [info.groupe] } 
+      });
+
       for (const socket of sockets) {
         if (socket.readyState === WebSocket.OPEN) {
-          const allSeances = await Seance.find({ 
-            classe: targetClasse, 
-            groupe: { $in: [info.groupe] } 
-          });
-
           socket.send(JSON.stringify({
             action: 'seances_updated',
             payload: allSeances,
