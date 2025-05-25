@@ -80,29 +80,9 @@ wss.on('connection', (ws, req) => {
       }
       else if (message.action === 'get_planning_student') {
         
-        console.warn("WS get_planning_student executed...")
-
-        const { userId, groupe, classe  } = message.payload;
-
-        const filter = {
-          $and: [
-            { groupe: groupe },
-            { classe:  classe }
-          ]
-        };
-
-        const seances = await Seance.find(filter)
-          .populate('moduleId')
-          .sort({ jour: 1, startTime: 1 })
-          .lean();
-
-         
-        
-        console.warn(seances);
-        
         ws.send(JSON.stringify({
           action: 'get_planning_student',
-          payload: seances,
+          payload: "hello",
         }));
 
       } else if(message.action === "hello_world") {
@@ -134,7 +114,7 @@ wss.on('connection', (ws, req) => {
         activeUsers.delete(userId);
         console.log("-------------------------");
         console.error(`Utilisateur ${userId} déconnecté`);  
-        console.warn(`Utilisateurs en ligne : ${activeUsers.size}`)
+        console.error(`Utilisateurs en ligne : ${activeUsers.size}`)
         console.log("-------------------------");
       }
     }
@@ -147,10 +127,7 @@ wss.on('connection', (ws, req) => {
 
 Seance.watch([], { fullDocument: 'updateLookup' }).on('change', async (change) => {
   console.warn("Seance collection changed :");
-  console.log(change);
-
-  console.warn("Active Users Map:", activeUsers);
-
+  console.warn(change);
 
   const updatedSeance = change.fullDocument;
   if (!updatedSeance) return;  
@@ -167,18 +144,11 @@ Seance.watch([], { fullDocument: 'updateLookup' }).on('change', async (change) =
       targetGroupe.includes(info.groupe)
     ){
 
-      console.log(`Sending updated seance to ${userId} - ${info.classe} / ${info.groupe}`);
-      
-      const allSeances = await Seance.find({ 
-        classe: targetClasse, 
-        groupe: { $in: [info.groupe] } 
-      });
-
       for (const socket of sockets) {
         if (socket.readyState === WebSocket.OPEN) {
           socket.send(JSON.stringify({
             action: 'seances_updated',
-            payload: allSeances,
+            payload: "seances updated in DATABASE"
           }));
         }
       }
@@ -207,7 +177,7 @@ const interval = setInterval(() => {
 
 // Server &  DataBase Connection 
 server.listen(PORT, () => {
-  console.log(`HTTP+WS server listening on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
   connectDb();
 });
 

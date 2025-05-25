@@ -91,7 +91,6 @@ router.post('/login', async (req, res) => {
         Model = Intervenant
       }
       mongodbUser = await Model.findOne({ idKeycloak : decodedUser.sub });
-      console.warn('mongodbUser : '+mongodbUser);
     }
     else{
       mongodbUser = null;
