@@ -54,7 +54,6 @@ wss.on('connection', (ws, req) => {
   ws.isAlive = true;
   ws.on('pong', heartbeat);
 
-
   ws.on('message', async (data) => {
     try {
       const message = JSON.parse(data);
@@ -73,14 +72,14 @@ wss.on('connection', (ws, req) => {
 
         activeUsers.get(userId).sockets.add(ws);
 
-        console.warn(`Utilisateur connecté : ${userId} appartenant à la classe : ${classe} et au groupe : ${groupe}`);
-        
-        
         console.log("-------------------------");
-        console.log(`Total sockets: ${activeUsers.size}`)
+        console.warn(`Utilisateur ${userId} connecté`); // :  appartenant à la classe : ${classe} et au groupe : ${groupe}
+        console.warn(`Utilisateurs en ligne : ${activeUsers.size}`)
         console.log("-------------------------");
+
       }
       else if (message.action === 'get_planning_student') {
+        
         console.warn("WS get_planning_student executed...")
 
         const { userId, groupe, classe  } = message.payload;
@@ -124,7 +123,7 @@ wss.on('connection', (ws, req) => {
     }
   });
 
-    ws.on('close', () => {
+  ws.on('close', () => {
     const userId = ws.userId;
     if (!userId) return;
 
@@ -133,9 +132,9 @@ wss.on('connection', (ws, req) => {
       entry.sockets.delete(ws);
       if (entry.sockets.size === 0) {
         activeUsers.delete(userId);
-        console.log(`Utilisateur ${userId} déconnecté.`);
         console.log("-------------------------");
-        console.log(`Total sockets: ${activeUsers.size}`)
+        console.error(`Utilisateur ${userId} déconnecté`);  
+        console.warn(`Utilisateurs en ligne : ${activeUsers.size}`)
         console.log("-------------------------");
       }
     }
