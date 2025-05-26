@@ -30,14 +30,7 @@ app.use('/api/planning', planningRoute);
 
 // HTTP Server & WebSocket 
 const server = http.createServer(app);
-
-const HEARTBEAT_INTERVAL = 15_000;
-
-function noop() {}
-
-function heartbeat() { 
-    this.isAlive = true; 
-}
+ 
 
 const wss = new WebSocket.Server({
   server,
@@ -51,8 +44,7 @@ const activeUsers = new Map();
 
 
 wss.on('connection', (ws, req) => {
-  ws.isAlive = true;
-  ws.on('pong', heartbeat);
+  
 
   ws.on('message', async (data) => {
     try {
@@ -163,15 +155,7 @@ Seance.watch([], { fullDocument: 'updateLookup' }).on('change', async (change) =
 
 
 
-
-const interval = setInterval(() => {
-  wss.clients.forEach((ws) => {
-    if (!ws.isAlive) return ws.terminate();
-    ws.isAlive = false;
-    ws.ping(noop);
-  });
-}, HEARTBEAT_INTERVAL);
-
+ 
 
 
 
@@ -183,16 +167,4 @@ server.listen(PORT, () => {
 
 
 
-
-// Unexpected Shutdown handled gracefully
-['SIGINT', 'SIGTERM'].forEach(signal => {
-  process.on(signal, () => {
-    console.log(`${signal} received, shutting down…`);
-    clearInterval(interval);
-    wss.clients.forEach(ws => ws.terminate());
-    server.close(() => {
-      console.log('Server closed cleanly');
-      process.exit(0);
-    });
-  });
-});
+ 

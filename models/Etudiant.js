@@ -57,6 +57,41 @@ const etudiantSchema = new mongoose.Schema(
             type: String, 
             required: false 
         },
+        parcours : [
+            {
+                annee : String, 
+                semestres : [
+                    {
+                        nom : String, 
+                        programme : String, 
+                        status : {
+                            type : String, 
+                            enum : [
+                                "valide", 
+                                "non_valide", 
+                                "en_cours", 
+                                "ajournee"
+                            ]
+                        },
+                        modules : [{
+                            moduleId : {
+                                type : mongoose.Schema.Types.ObjectId, 
+                                ref : 'Module'   
+                            }, 
+                            status : {
+                                type : String, 
+                                enum : [
+                                    "valide", 
+                                    "non_valide", 
+                                    "en_cours", 
+                                    "ajournee"
+                                ]
+                            }
+                        }]
+                    }
+                ]
+            }
+        ]
     }, 
     { 
         timestamps: true

@@ -335,6 +335,57 @@ router.post('/createSeance', async (req, res) => {
   }
 });
  
+
+
+router.patch('/etudiant/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { annee, semestres } = req.body;
+
+    const updatedUser = await Etudiant.findByIdAndUpdate(
+      id,
+      {
+        $push: {
+          parcours: {
+            annee,      
+            semestres
+          }
+        }
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(updatedUser);
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ msg: e.message });
+  }
+});
+
+
+
+router.get('/etudiant/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const etudiant = await Etudiant.findById(id)
+      .populate({
+        path: "parcours.semestres.modules.moduleId",  
+        model: "Module"  
+      });
+
+    if (!etudiant) return res.status(404).json({ message: "User not found" });
+
+    res.json(etudiant);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+ 
  
  
 
