@@ -4,6 +4,7 @@ const jwt     = require('jsonwebtoken');
 const axios   = require("axios")
 const Etudiant = require('../models/Etudiant');
 const Intervenant = require('../models/Intervenant');
+const Notification = require("../models/Notification");
 const Tuteur = require('../models/Tuteur');
 const Module = require('../models/Module');
 const Seance = require('../models/Seance');
@@ -381,6 +382,45 @@ router.get('/etudiant/:id', async (req, res) => {
     if (!etudiant) return res.status(404).json({ message: "User not found" });
 
     res.json(etudiant);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+
+router.get('/notification/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const notifications = await Notification.find({
+      userId : userId
+    }).sort({
+      createdAt : -1
+    })
+
+    if (!notifications) return res.status(404).json({ message: "Notifications not found" });
+
+    res.json(notifications);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+ 
+
+router.post('/notification/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const {titre, description, type} = req.body;
+
+    const notification = await Notification.create({
+      userId,
+      titre, 
+      description, 
+      type
+    });
+
+    if (!notification) return res.status(404).json({ message: "Notifications not created" });
+
+    res.json(notification);
   } catch (e) {
     res.status(500).json({ message: e.message });
   }

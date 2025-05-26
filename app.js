@@ -5,10 +5,11 @@ const cookieParser = require('cookie-parser');
 const WebSocket    = require('ws');
 
 const connectDb       = require('./config/db');
-const authRoute       = require('./routes/auth');
+const diversRoutes       = require('./routes/divers');
 const userRoute       = require('./routes/user');
 const planningRoute   = require('./routes/planning');
 const Seance = require('./models/Seance');
+const Notification = require('./models/Notification');
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
@@ -22,7 +23,7 @@ app.use(cookieParser());
 
 
 // REST API Routes 
-app.use('/api/auth',     authRoute);
+app.use('/api/auth',     diversRoutes);
 app.use('/api/user',     userRoute);
 app.use('/api/planning', planningRoute);
 
@@ -117,17 +118,25 @@ wss.on('connection', (ws, req) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 Seance.watch([], { fullDocument: 'updateLookup' }).on('change', async (change) => {
   console.warn("Seance collection changed :");
   console.warn(change);
-
   const updatedSeance = change.fullDocument;
   if (!updatedSeance) return;  
 
   const targetClasse = updatedSeance.classe;
   const targetGroupe = updatedSeance.groupe;
-
-  
 
   for (const [userId, { sockets, info }] of activeUsers.entries()) {
     if (
@@ -148,6 +157,30 @@ Seance.watch([], { fullDocument: 'updateLookup' }).on('change', async (change) =
     else{
       console.error(`Not Broadcasted to user : ${userId}`);
     }
+  }
+});
+
+
+
+Notification.watch([], { fullDocument: 'updateLookup' }).on('change', async (change) => {
+  const updatedNotification = change.fullDocument;
+  if (!updatedNotification || !updatedNotification.userId) return;
+
+  const targetUserId = updatedNotification.userId;
+  const targetUser = activeUsers.get(targetUserId);
+
+  if (targetUser) {
+    for (const socket of targetUser.sockets) {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          action: 'notification_updated',
+          payload: updatedNotification,
+        }));
+      }
+    }
+    console.log("Broadcasted to user: " + targetUserId);
+  } else {
+    console.error("User not connected: " + targetUserId);
   }
 });
 
