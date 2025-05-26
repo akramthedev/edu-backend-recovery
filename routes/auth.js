@@ -305,7 +305,7 @@ router.post('/createModule', async (req, res) => {
 });
 
 
-
+   // create seance 
 
 
 router.post('/createSeance', async (req, res) => {
