@@ -1,4 +1,6 @@
 const express = require('express');
+const qs      = require('qs');
+const jwksClient = require('jwks-rsa');
 const bcrypt  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
 const axios   = require("axios")
@@ -10,10 +12,10 @@ const Module = require('../models/Module');
 const Seance = require('../models/Seance');
 const ProgrammeType = require('../models/ProgrammeType');
 const Programme = require('../models/Programme');
+const CampagnesInscriptions = require('../models/CampagnesInscriptions');
+const Filiere = require('../models/Filiere');
 
 
-const qs      = require('qs');
-const jwksClient = require('jwks-rsa');
 
 
 const router  = express.Router();
@@ -366,6 +368,29 @@ router.post('/createProgrammeType', async (req, res) => {
 });
 
 
+
+router.post('/createFiliere', async (req, res) => {
+  try {
+    const { code, libelle } = req.body;
+
+    
+    const isFiliereCreated = await Filiere.create({
+      code, 
+      libelle, 
+  
+    });
+
+    res.status(201).json({
+      id: isFiliereCreated._id,
+    });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ msg: e.message });
+  }
+});
+
+
 router.post('/createProgramme', async (req, res) => {
   try {
     const { code, typeProgramme, inscription } = req.body;
@@ -480,6 +505,105 @@ router.post('/notification/:userId', async (req, res) => {
     if (!notification) return res.status(404).json({ message: "Notifications not created" });
 
     res.json(notification);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+ 
+ 
+
+ 
+
+router.post('/createCampagne', async (req, res) => {
+  try {
+    const { programmeCible, filiereCible, anneeUniversitaire, dateDebut, dateFin  } = req.body;
+
+    const isCampagneCreated = await CampagnesInscriptions.create({
+      programmeCible, 
+      anneeUniversitaire, 
+      filiereCible, 
+      dateDebut, 
+      dateFin    
+    });
+
+    if (!isCampagneCreated) return res.status(404).json({ message: "Notifications not created" });
+
+    res.status(201).json(isCampagneCreated);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+ 
+
+
+router.post('/checkCampagne', async (req, res) => {
+  try {
+    const { programmeCible, filiereCible } = req.body;
+
+    const existingCampagne = await CampagnesInscriptions.findOne({
+      programmeCible,
+      filiereCible,
+      active: true
+    })
+    .populate([
+      { path: 'programmeCible', populate: { path: 'typeProgramme' } },
+      { path: 'filiereCible' }
+    ]);
+
+
+    if (!existingCampagne) {
+      return res.status(202).json({ message: 'No matching campaign found.' });
+    }
+
+    res.status(200).json(existingCampagne);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+
+
+
+router.get('/campagnes', async (req, res) => {
+  try {
+    const isCampagnesFound = await CampagnesInscriptions
+    .find()
+    .populate({
+      path: 'programmeCible',
+      populate: {
+        path: 'typeProgramme'
+      }
+    })
+    .populate({
+      path: 'filiereCible'
+    });
+
+
+    if (!isCampagnesFound) return res.status(404).json({ message: "Campagnes not fetched" });
+
+    res.status(200).json(isCampagnesFound);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+ 
+ 
+ 
+
+
+
+router.get('/programmes', async (req, res) => {
+  try {
+    const isProgrammesFetched = await Programme
+    .find()
+    .populate({
+        path: 'typeProgramme',
+        model: 'ProgrammeType'
+      })
+
+    if (!isProgrammesFetched) return res.status(404).json({ message: "Programmes not fetched" });
+
+    res.status(200).json(isProgrammesFetched);
   } catch (e) {
     res.status(500).json({ message: e.message });
   }

@@ -3,6 +3,7 @@ const express      = require('express');
 const http         = require('http');
 const cookieParser = require('cookie-parser');
 const WebSocket    = require('ws');
+const cors = require('cors');
 
 const connectDb       = require('./config/db');
 const diversRoutes       = require('./routes/divers');
@@ -19,7 +20,7 @@ const PORT = process.env.PORT || 5000;
 // Middlewares
 app.use(express.json());
 app.use(cookieParser());
-
+app.use(cors());
 
 
 // REST API Routes 

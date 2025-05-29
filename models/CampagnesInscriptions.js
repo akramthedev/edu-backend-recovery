@@ -9,10 +9,11 @@ const campagneInscriptionSchema = new mongoose.Schema({
     },
     anneeCible: { 
         type: Number, 
-        required: true 
+        required: false  
     },  
     filiereCible: { 
-        type: String, 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Filiere', 
         required: false 
     },  
     anneeUniversitaire: { 
@@ -29,7 +30,7 @@ const campagneInscriptionSchema = new mongoose.Schema({
     }, 
     active : {
         type : Boolean, 
-        default : false
+        default : true
     }
 }, {
     timestamps : true,

@@ -13,6 +13,13 @@ const ProgrammeSchema = new mongoose.Schema({
         ref: 'ProgrammeType', 
         required: true 
     },
+    filiere: [
+        { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'Filiere', 
+            required: false 
+        }
+    ],
     inscription: {
         debut: Date,
         fin: Date

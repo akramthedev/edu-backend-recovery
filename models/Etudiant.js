@@ -28,8 +28,11 @@ const etudiantSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Programme'
         },
-        anneeActuelle: Number, // 1 or 2 or 3 ...; NOW NO NEED TO LOOP OVER ARRAY OF OBJECTS ... 
-        //  it seems REDUNDANT BUT it is so efficient .... 
+        filiereActuelle: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Filiere'
+        },
+        anneeActuelle: Number, // 1 or 2 or 3... 
         redoublant: { 
             type: Boolean, 
             default: false 
