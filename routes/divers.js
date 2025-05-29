@@ -8,8 +8,13 @@ const Notification = require("../models/Notification");
 const Tuteur = require('../models/Tuteur');
 const Module = require('../models/Module');
 const Seance = require('../models/Seance');
+const ProgrammeType = require('../models/ProgrammeType');
+const Programme = require('../models/Programme');
+
+
 const qs      = require('qs');
 const jwksClient = require('jwks-rsa');
+
 
 const router  = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -338,6 +343,52 @@ router.post('/createSeance', async (req, res) => {
  
 
 
+
+
+router.post('/createProgrammeType', async (req, res) => {
+  try {
+    const { code, libelle } = req.body;
+
+    
+    const isProgTypeCreated = await ProgrammeType.create({
+      code, 
+      libelle
+    });
+
+    res.status(201).json({
+      id: isProgTypeCreated._id,
+    });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ msg: e.message });
+  }
+});
+
+
+router.post('/createProgramme', async (req, res) => {
+  try {
+    const { code, typeProgramme, inscription } = req.body;
+
+    
+    const isProgTypeCreated = await Programme.create({
+       code, 
+       typeProgramme, 
+       inscription 
+    });
+
+    res.status(201).json({
+      id: isProgTypeCreated._id,
+    });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ msg: e.message });
+  }
+});
+ 
+
+
 router.patch('/etudiant/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -369,23 +420,31 @@ router.patch('/etudiant/:id', async (req, res) => {
 });
 
 
-
 router.get('/etudiant/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const etudiant = await Etudiant.findById(id)
       .populate({
-        path: "parcours.semestres.modules.moduleId",  
-        model: "Module"  
+        path: 'parcours.semestres.modules.moduleId',
+        model: 'Module'
+      })
+      .populate({
+        path: 'parcours.programme',
+        model: 'Programme',
+        populate: {
+          path: 'typeProgramme',
+          model: 'ProgrammeType'
+        }
       });
 
-    if (!etudiant) return res.status(404).json({ message: "User not found" });
+    if (!etudiant) return res.status(404).json({ message: 'Étudiant non trouvé' });
 
     res.json(etudiant);
   } catch (e) {
     res.status(500).json({ message: e.message });
   }
 });
+
 
 
 router.get('/notification/:userId', async (req, res) => {

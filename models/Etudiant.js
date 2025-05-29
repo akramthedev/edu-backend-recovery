@@ -24,7 +24,61 @@ const etudiantSchema = new mongoose.Schema(
             required: true, 
             unique: true 
         },
-         
+        programmeActuel: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Programme'
+        },
+        anneeActuelle: Number, // 1 or 2 or 3 ...; NOW NO NEED TO LOOP OVER ARRAY OF OBJECTS ... 
+        //  it seems REDUNDANT BUT it is so efficient .... 
+        redoublant: { 
+            type: Boolean, 
+            default: false 
+        },
+        parcours : [  
+            {
+                annee : String, 
+                status: {
+                    type: String,
+                    enum : ["valide", "non_valide", "en_cours", ], 
+                    default: 'en_cours'
+                },
+                programme: { 
+                    type: mongoose.Schema.Types.ObjectId, 
+                    ref: 'Programme', 
+                    required: true 
+                },
+                redoublant: { 
+                    type: Boolean, 
+                    default: false 
+                },
+                semestres : [
+                    {
+                        nom : String, 
+                        status : {
+                            type : String, 
+                            enum : ["valide", "non_valide", "en_cours", ], 
+                            default: 'en_cours'
+                        },
+                        note : {
+                            type : String, 
+                            default : "", 
+                            required : false
+                        },
+                        modules : [{
+                            moduleId : {
+                                type : mongoose.Schema.Types.ObjectId, 
+                                ref : 'Module'   
+                            }, 
+                            status : {
+                                type : String, 
+                                enum : ["valide", "non_valide", "en_cours", ], 
+                                default: 'en_cours'
+                            }
+                        }]
+                    }
+                ]
+            }
+        ],
         telephone: { 
             type: String, 
             required: false 
@@ -57,41 +111,7 @@ const etudiantSchema = new mongoose.Schema(
             type: String, 
             required: false 
         },
-        parcours : [
-            {
-                annee : String, 
-                semestres : [
-                    {
-                        nom : String, 
-                        programme : String, 
-                        status : {
-                            type : String, 
-                            enum : [
-                                "valide", 
-                                "non_valide", 
-                                "en_cours", 
-                                "ajournee"
-                            ]
-                        },
-                        modules : [{
-                            moduleId : {
-                                type : mongoose.Schema.Types.ObjectId, 
-                                ref : 'Module'   
-                            }, 
-                            status : {
-                                type : String, 
-                                enum : [
-                                    "valide", 
-                                    "non_valide", 
-                                    "en_cours", 
-                                    "ajournee"
-                                ]
-                            }
-                        }]
-                    }
-                ]
-            }
-        ]
+        
     }, 
     { 
         timestamps: true
