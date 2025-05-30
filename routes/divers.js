@@ -86,24 +86,25 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    let Model;
 
     if(decodedUser && role){
       if(role === "etudiant"){
-        Model = Etudiant
+        mongodbUser = await Etudiant.findOne({ idKeycloak: decodedUser.sub })
+          .populate('parcours.programme')
+          .populate('parcours.filiere');
       }
       else if(role === "tuteur"){
-        Model = Tuteur
+        mongodbUser = await Tuteur.findOne({ idKeycloak : decodedUser.sub });
       }
       else if(role === "intervenant"){
-        Model = Intervenant
+        mongodbUser = await Intervenant.findOne({ idKeycloak : decodedUser.sub });
       }
-      mongodbUser = await Model.findOne({ idKeycloak : decodedUser.sub });
     }
     else{
       mongodbUser = null;
     }
 
+    console.warn(mongodbUser);
 
     res.status(200).json({
       ...tokenResponse.data,
@@ -405,6 +406,33 @@ router.post('/createProgramme', async (req, res) => {
     res.status(201).json({
       id: isProgTypeCreated._id,
     });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ msg: e.message });
+  }
+});
+ 
+
+
+router.get('/getSingleProgramme/:newProgramme', async (req, res) => {
+  try {
+
+    // this function will get the programm after the one sent in params ... 
+    // like we do not fetch the details of this programm :progId but the one after it 
+    // for example if it is Licence we gonna fetch all data of Master M1
+    // if it is TRONC_COMMUN_2 2nd year we gonna fetch all data of programm Licence 
+    const { newProgramme } = req.params;
+
+    const isFound = await Programme
+      .findOne({
+        code : newProgramme,
+      })
+      .populate('filiere');
+
+      console.warn(isFound);
+
+    res.status(200).json(isFound);
 
   } catch (e) {
     console.error(e);

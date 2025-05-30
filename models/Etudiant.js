@@ -50,6 +50,10 @@ const etudiantSchema = new mongoose.Schema(
                     ref: 'Programme', 
                     required: true 
                 },
+                filiere: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'Filiere'
+                },
                 redoublant: { 
                     type: Boolean, 
                     default: false 
