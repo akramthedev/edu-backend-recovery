@@ -637,7 +637,36 @@ router.get('/programmes', async (req, res) => {
   }
 });
  
- 
+ router.post('/add-parcours/:id', async (req, res) => {
+    const { id } = req.params;
+    const parcoursData = req.body; // Full parcours object
+
+    try {
+        const etudiant = await Etudiant.findById(id);
+
+        if (!etudiant) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        if (!etudiant.parcours || etudiant.parcours.length === 0) {
+            // If parcours is empty, initialize with the first parcours
+            etudiant.parcours = [parcoursData];
+        } else {
+            // Push new parcours instead of updating the existing one
+            etudiant.parcours.push(parcoursData);
+        }
+
+        await etudiant.save();
+        return res.status(200).json({ message: 'Parcours pushed successfully', etudiant });
+
+    } catch (error) {
+        console.error('Error pushing parcours:', error);
+        return res.status(500).json({ message: 'Internal server error', error });
+    }
+});
+
+
+
  
 
 module.exports = router;
