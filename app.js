@@ -98,11 +98,15 @@ app.get('/auth/google/callback', async (req, res) => {
     req.session.refresh_token = refresh_token;
     req.session.expires_at = Date.now() + expires_in * 1000;
 
-    res.json({
-      access_token,
-      refresh_token,
-      expires_in,
-    });
+    res.send(`
+      <html>
+        <body>
+          <script>
+            window.location = "edu://oauth?access_token=${access_token}&refresh_token=${refresh_token}";
+          </script>
+        </body>
+      </html>
+    `);
   } catch (error) {
     console.error(error.response?.data || error.message);
     res.status(500).send('Failed to exchange code for tokens');
