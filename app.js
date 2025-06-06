@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 5000;
 const CLIENT_ID = "267508651605-2vqqep29h97uef9tt7ahis82dskjsm1r.apps.googleusercontent.com";
 const CLIENT_SECRET = "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";
 const API_KEY = "AIzaSyBhI34z9rSK7S-rfmngJ1nmb48zfb5nUz8";
-const REDIRECT_URI = 'http://universiapulse-001-site45.qtempurl.com/auth/google/callback';
+const REDIRECT_URI = 'https://edu-backend.up.railway.app/auth/google/callback';
 
 
 const SCOPES = [
