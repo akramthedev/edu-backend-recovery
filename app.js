@@ -66,7 +66,7 @@ app.get('/auth/google', (req, res) => {
   authUrl.searchParams.set('scope', SCOPES.join(' '));
   authUrl.searchParams.set('access_type', 'offline');  
   authUrl.searchParams.set('prompt', 'consent');  
-
+  console.log('→ Redirecting user to Google OAuth:', authUrl.toString());
   res.redirect(authUrl.toString());
 });
 
@@ -101,13 +101,14 @@ app.get('/auth/google/callback', async (req, res) => {
     req.session.expires_at = Date.now() + expires_in * 1000;
 
     res.send(`
-      <html>
-        <body>
-          <script>
-            window.location = "com.akram_bsr88.edu://oauth?access_token=${access_token}&refresh_token=${refresh_token}";
-          </script>
-        </body>
-      </html>
+      <html><body>
+        <script>
+          window.location =
+            "com.akram_bsr88.edu://oauth"
+            + "?access_token=${access_token}"
+            + "&refresh_token=${refresh_token}";
+        </script>
+      </body></html>
     `);
   } catch (error) {
     console.error(error.response?.data || error.message);
