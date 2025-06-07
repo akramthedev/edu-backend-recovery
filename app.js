@@ -23,6 +23,8 @@ const CLIENT_ID = "267508651605-2vqqep29h97uef9tt7ahis82dskjsm1r.apps.googleuser
 const CLIENT_SECRET = "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";
 const API_KEY = "AIzaSyBhI34z9rSK7S-rfmngJ1nmb48zfb5nUz8";
 const REDIRECT_URI = 'https://edu-backend.up.railway.app/auth/google/callback';
+const schemeNameAndroid = "com.akram_bsr88.edu";
+
 
 
 const SCOPES = [
@@ -102,7 +104,7 @@ app.get('/auth/google/callback', async (req, res) => {
       <html>
         <body>
           <script>
-            window.location = "edu://oauth?access_token=${access_token}&refresh_token=${refresh_token}";
+            window.location = "com.akram_bsr88.edu://oauth?access_token=${access_token}&refresh_token=${refresh_token}";
           </script>
         </body>
       </html>
